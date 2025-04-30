@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Buddy - Global Tax Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <nav class="bg-white shadow p-4 flex justify-between">
+    <h1 class="text-xl font-bold">Finance Buddy</h1>
+    <div>
+      <a href="#home" class="mx-2">Home</a>
+      <a href="#tax" class="mx-2">Tax Calculator</a>
+      <a href="#goal" class="mx-2">Goal Planner</a>
+      <a href="#advice" class="mx-2">Advice</a>
+      <a href="#taxfree" class="mx-2">Tax-Free Countries</a>
+    </div>
+  </nav>
+
+  <main class="p-4">
+    <section id="tax" class="mb-8">
+      <h2 class="text-2xl font-bold mb-2">Tax Calculator</h2>
+      <input type="text" id="country" placeholder="Country" class="border p-2 mr-2" />
+      <input type="number" id="income" placeholder="Annual Income" class="border p-2 mr-2" />
+      <input type="number" id="deductions" placeholder="Deductions" class="border p-2 mr-2" />
+      <button onclick="calculateTax()" class="bg-blue-500 text-white px-4 py-2">Calculate</button>
+      <p id="taxResult" class="mt-2 text-green-600"></p>
+    </section>
+
+    <section id="goal" class="mb-8">
+      <h2 class="text-2xl font-bold mb-2">Goal Planner</h2>
+      <input type="number" id="goalAmount" placeholder="Goal Amount" class="border p-2 mr-2" />
+      <input type="number" id="months" placeholder="Months" class="border p-2 mr-2" />
+      <button onclick="calculateGoal()" class="bg-green-500 text-white px-4 py-2">Calculate</button>
+      <p id="goalResult" class="mt-2 text-green-600"></p>
+    </section>
+
+    <section id="advice" class="mb-8">
+      <h2 class="text-2xl font-bold mb-2">Advice</h2>
+      <input type="number" id="userIncome" placeholder="Income" class="border p-2 mr-2" />
+      <input type="number" id="userExpenses" placeholder="Expenses" class="border p-2 mr-2" />
+      <button onclick="giveAdvice()" class="bg-yellow-500 text-white px-4 py-2">Get Advice</button>
+      <p id="adviceResult" class="mt-2 text-green-600"></p>
+    </section>
+
+    <section id="taxfree">
+      <h2 class="text-2xl font-bold mb-2">Tax-Free Countries</h2>
+      <ul class="list-disc list-inside">
+        <li>UAE</li>
+        <li>Monaco</li>
+        <li>Bahamas</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    const taxData = {
+      "USA": { brackets: [[0, 0.10], [10275, 0.12], [41775, 0.22], [89075, 0.24], [170050, 0.32], [215950, 0.35], [539900, 0.37]], taxFree: false },
+      "India": { brackets: [[0, 0.05], [250000, 0.10], [500000, 0.20], [1000000, 0.30]], taxFree: false },
+      "UK": { brackets: [[0, 0.0], [12570, 0.20], [50270, 0.40], [150000, 0.45]], taxFree: false },
+      "Canada": { brackets: [[0, 0.15], [53359, 0.205], [106717, 0.26], [165430, 0.29], [235675, 0.33]], taxFree: false },
+      "Australia": { brackets: [[0, 0.0], [18200, 0.19], [45000, 0.325], [120000, 0.37], [180000, 0.45]], taxFree: false },
+      "Germany": { brackets: [[0, 0.0], [9744, 0.14], [14753, 0.239], [57918, 0.42], [274612, 0.45]], taxFree: false },
+      "Singapore": { brackets: [[0, 0.0], [20000, 0.02], [30000, 0.035], [40000, 0.07], [80000, 0.115], [120000, 0.15], [160000, 0.18], [200000, 0.19], [240000, 0.195], [280000, 0.20], [320000, 0.22]], taxFree: false },
+      "UAE": { brackets: [], taxFree: true },
+      "Monaco": { brackets: [], taxFree: true },
+      "Bahamas": { brackets: [], taxFree: true }
+    };
+
+    function calculateTax() {
+      const country = document.getElementById('country').value;
+      let income = parseFloat(document.getElementById('income').value) || 0;
+      const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+      income -= deductions;
+
+      if (taxData[country]?.taxFree) {
+        document.getElementById('taxResult').innerText = `Good news! ${country} has no personal income tax.`;
+        return;
+      }
+
+      let estimatedTax = 0;
+      let taxableIncome = income;
+      const brackets = taxData[country]?.brackets || [];
+      for (let i = brackets.length - 1; i >= 0; i--) {
+        if (taxableIncome > brackets[i][0]) {
+          estimatedTax += (taxableIncome - brackets[i][0]) * brackets[i][1];
+          taxableIncome = brackets[i][0];
+        }
+      }
+
+      document.getElementById('taxResult').innerText = `Estimated Tax for ${country}: $${estimatedTax.toFixed(2)}`;
+    }
+
+    function calculateGoal() {
+      const goalAmount = parseFloat(document.getElementById('goalAmount').value) || 0;
+      const months = parseInt(document.getElementById('months').value) || 1;
+      const monthlySaving = goalAmount / months;
+      document.getElementById('goalResult').innerText = `You need to save $${monthlySaving.toFixed(2)} per month.`;
+    }
+
+    function giveAdvice() {
+      const income = parseFloat(document.getElementById('userIncome').value) || 0;
+      const expenses = parseFloat(document.getElementById('userExpenses').value) || 0;
+      if (income <= expenses) {
+        document.getElementById('adviceResult').innerText = "Your expenses are too high! Focus on cutting down costs first.";
+      } else {
+        const saving = ((income - expenses) / income) * 100;
+        document.getElementById('adviceResult').innerText = `You're saving ${saving.toFixed(1)}% of your income. Great job! Aim to save at least 20%.`;
+      }
+    }
+  </script>
+</body>
+</html>
